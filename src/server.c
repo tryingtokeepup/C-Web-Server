@@ -56,11 +56,30 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
 
     // Build HTTP response and store it in response
     // I need a response_length
-    int response_length = sprintf(response, "its wednesday my dudes");
+    time_t t = time(NULL);
+    struct tm *local_time = localtime(&t); // we need to pass t as a pointer, because local time is looking for a pointer
+
+    //    printf("Current local time and date: %s", asctime(info));
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
 
+    sprintf(response, "%s\n"                // the header
+                      "Connection: close\n" // the connection
+                      "Content-Type: %s\n "
+                      "Date: %s\n"
+                      "%s\n", // the body
+            header, content_type, asctime(info), body
+
+    );
+
+    // int response_length = sprintf(response,
+    //                               "%s\nDate: %sContent-Length: %d"
+    //                               "Connection: close\nContent-Type: %s"
+    //                               "\n"    // end marker for header
+    //                               "%s\n", // body
+    //                               header, asctime(info), content_length,
+    //                               content_type, body);
     // Send it all!
     int rv = send(fd, response, response_length, 0);
 
@@ -159,7 +178,11 @@ void handle_http_request(int fd, struct cache *cache)
         perror("recv");
         return;
     }
+    else
+    {
 
+        resp_404(fd);
+    }
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
