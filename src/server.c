@@ -68,12 +68,13 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
                                             "Connection: close\n" // the connection
                                             "Content-Type: %s\n "
                                             "Content-Length: %d\n"
-                                            "Date: %s\n"
-                                            "%s\n", // the body
-                                  header, content_type, content_length, timestamp, body
+                                            "Date: %s\n",
+                                  // "%s\n", // the body, but we need to go agnostic
+                                  header,
+                                  content_type, content_length, timestamp);
 
-    );
-
+    memcpy(response + response_length, body, content_length);
+    response_length += content_length;
     // int response_length = sprintf(response,
     //                               "%s\nDate: %sContent-Length: %d"
     //                               "Connection: close\nContent-Type: %s"
