@@ -162,9 +162,6 @@ void handle_http_request(int fd, struct cache *cache)
 {
     const int request_buffer_size = 65536; // 64K
     char request[request_buffer_size];
-    char request_type[8]; // this should be safe as a buffer
-    char request_path[1024];
-    char request_protocol[16];
 
     // Read request
     int bytes_recvd = recv(fd, request, request_buffer_size - 1, 0);
@@ -174,19 +171,27 @@ void handle_http_request(int fd, struct cache *cache)
         perror("recv");
         return;
     }
-    else
-    {
 
-        resp_404(fd);
-    }
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
+    char request_type[8];
+    char request_path[8192];
+    //char request_protocol[16]; // no need to worry about that right now
 
     // Read the first two components of the first line of the request
-
+    sscanf(request, "%s %s", request_type, request_path);
     // If GET, handle the get endpoints
+    if (strcmp(request_type, "GET") == 0 && strcmp(request_path, "/d20"))
+    {
 
+        get_d20(fd);
+    }
+    else
+    {
+
+        get_file(fd, cache, request_path);
+    }
     //    Check if it's /d20 and handle that special case
     //    Otherwise serve the requested file by calling get_file()
 
