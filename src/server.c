@@ -74,16 +74,9 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
                                   content_type, content_length, timestamp);
 
     memcpy(response + response_length, body, content_length);
-    response_length += content_length;
-    // int response_length = sprintf(response,
-    //                               "%s\nDate: %sContent-Length: %d"
-    //                               "Connection: close\nContent-Type: %s"
-    //                               "\n"    // end marker for header
-    //                               "%s\n", // body
-    //                               header, asctime(info), content_length,
-    //                               content_type, body);
-    // Send it all!
-    int rv = send(fd, response, response_length, 0);
+    //esponse_length += content_length;
+
+    int rv = send(fd, response, response_length + content_length, 0);
 
     if (rv < 0)
     {
@@ -99,13 +92,14 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
 void get_d20(int fd)
 {
     // Generate a random number between 1 and 20 inclusive
-
-    ///////////////////
-    // IMPLEMENT ME! //
-    ///////////////////
-
+    int d20;
+    srand(time(NULL));
+    d20 = rand() % 20 + 1;
+    char result[4];
+    sprintf(result, "%d\n", d20);
     // Use send_response() to send it back as text/plain data
-
+    // what is the mime_type?
+    send_response(fd, "HTTP/1.1 200 OK", "text/plain", result, strlen(result));
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
