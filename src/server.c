@@ -56,20 +56,21 @@ int send_response(int fd, char *header, char *content_type, void *body, int cont
 
     // Build HTTP response and store it in response
     // I need a response_length
-    time_t t = time(NULL);
+    time_t t = time(NULL);                 // t is a large integer representing time ellapsed
     struct tm *local_time = localtime(&t); // we need to pass t as a pointer, because local time is looking for a pointer
-
+    char *timestamp = asctime(local_time);
     //    printf("Current local time and date: %s", asctime(info));
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
 
-    sprintf(response, "%s\n"                // the header
-                      "Connection: close\n" // the connection
-                      "Content-Type: %s\n "
-                      "Date: %s\n"
-                      "%s\n", // the body
-            header, content_type, asctime(info), body
+    int response_length = sprintf(response, "%s\n"                // the header
+                                            "Connection: close\n" // the connection
+                                            "Content-Type: %s\n "
+                                            "Content-Length: %d\n"
+                                            "Date: %s\n"
+                                            "%s\n", // the body
+                                  header, content_type, content_length, timestamp, body
 
     );
 
