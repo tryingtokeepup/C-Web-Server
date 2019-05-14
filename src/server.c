@@ -95,8 +95,8 @@ void get_d20(int fd)
     int d20;
     srand(time(NULL));
     d20 = rand() % 20 + 1;
-    char result[4];
-    sprintf(result, "%d\n", d20);
+    char result[16];
+    sprintf(result, "%d", d20);
     // Use send_response() to send it back as text/plain data
     // what is the mime_type?
     send_response(fd, "HTTP/1.1 200 OK", "text/plain", result, strlen(result));
