@@ -18,8 +18,12 @@ struct cache_entry *alloc_entry(char *path, char *content_type, void *content, i
     // let's just strdup ALL THE THINGS
     (*cache_entry).path = strdup(path);
     (*cache_entry).content_type = strdup(content_type);
-    (*cache_entry).content = strdup(content);
     (*cache_entry).content_length = content_length;
+    (*cache_entry).content = memcpy(cache_entry->content, content, content_length);
+    (*cache_entry).next = NULL;
+    (*cache_entry).prev = NULL;
+
+    return cache_entry;
 }
 
 /**
@@ -30,6 +34,18 @@ void free_entry(struct cache_entry *entry)
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
+    free(entry->content);
+    entry->content = NULL;
+    free(entry->content_type);
+    entry->content_type = NULL;
+    free(entry->path);
+    entry->path = NULL;
+    free(entry->next);
+    entry->next = NULL;
+    free(entry->prev);
+    entry->prev = NULL;
+    free(entry);
+    entry = NULL;
 }
 
 /**
@@ -108,9 +124,17 @@ struct cache *cache_create(int max_size, int hashsize)
     // IMPLEMENT ME! //
     ///////////////////
 
+    struct cache *cool_cache = malloc(sizeof(struct cache));
     // instantiate hash table
-    // instantiate linked_lists
-    // instantiate cache_size
+    // what does hashtable_create want to take in? (hashsize, NULL)? (max_size, hashsize?)
+    struct hashtable *index = hashtable_create(hashsize, NULL);
+    cool_cache->index = index;
+    cool_cache->max_size = max_size;
+    cool_cache->head = NULL;
+    cool_cache->tail = NULL;
+    cool_cache->cur_size = 0;
+
+    return cool_cache;
 }
 
 void cache_free(struct cache *cache)
@@ -158,7 +182,7 @@ void cache_put(struct cache *cache, char *path, char *content_type, void *conten
     if (cache->cur_size > cache->max_size)
     {
         // remove the tail, as that is literally the LRU
-        dll_remove_tail(cache);
+        dllist_remove_tail(cache);
         // remove the same entry from the hash table
         hashtable_delete(cache->index, path);
         // free the cache entry
@@ -176,7 +200,7 @@ struct cache_entry *cache_get(struct cache *cache, char *path)
     ///////////////////
 
     // attempt to find the cache entry pointer by path in the hashtable
-    if (hastable_get(cache->index, path) == NULL)
+    if (hashtable_get(cache->index, path) == NULL)
     {
         return NULL;
     }
@@ -184,7 +208,7 @@ struct cache_entry *cache_get(struct cache *cache, char *path)
     // move the cache entry to the head of the double-linked list
     // BECAUSE ITS NOW THE MOST RECENTLY ACCESSED ENTRY
     // so the key is literally an endpoint, like cat.jpg, and we look for it in the hashtable
-    dllist_move_to_head(cache, hastable_get(cache->index, path));
+    dllist_move_to_head(cache, hashtable_get(cache->index, path));
     // return cache entry pointer
     // printf("the cache->head is: %s", cache->head);
     return cache->head;
