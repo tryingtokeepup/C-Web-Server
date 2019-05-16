@@ -107,6 +107,10 @@ struct cache *cache_create(int max_size, int hashsize)
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
+
+    // instantiate hash table
+    // instantiate linked_lists
+    // instantiate cache_size
 }
 
 void cache_free(struct cache *cache)
@@ -170,4 +174,18 @@ struct cache_entry *cache_get(struct cache *cache, char *path)
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
+
+    // attempt to find the cache entry pointer by path in the hashtable
+    if (hastable_get(cache->index, path) == NULL)
+    {
+        return NULL;
+    }
+
+    // move the cache entry to the head of the double-linked list
+    // BECAUSE ITS NOW THE MOST RECENTLY ACCESSED ENTRY
+    // so the key is literally an endpoint, like cat.jpg, and we look for it in the hashtable
+    dllist_move_to_head(cache, hastable_get(cache->index, path));
+    // return cache entry pointer
+    // printf("the cache->head is: %s", cache->head);
+    return cache->head;
 }
