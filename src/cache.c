@@ -13,13 +13,14 @@ struct cache_entry *alloc_entry(char *path, char *content_type, void *content, i
     // IMPLEMENT ME! //
     ///////////////////
     // make some memory for new struct
-    struct cache_entry *cache_entry = malloc(sizeof cache_entry);
-    // take care of the path
-    // let's just strdup ALL THE THINGS
+    struct cache_entry *cache_entry = malloc(sizeof *cache_entry);
+    // // take care of the path
+    // // let's just strdup ALL THE THINGS
     (*cache_entry).path = strdup(path);
     (*cache_entry).content_type = strdup(content_type);
     (*cache_entry).content_length = content_length;
-    (*cache_entry).content = memcpy(cache_entry->content, content, content_length);
+    (*cache_entry).content = malloc(content_length);
+    memcpy(cache_entry->content, content, content_length);
     (*cache_entry).next = NULL;
     (*cache_entry).prev = NULL;
 
@@ -34,16 +35,14 @@ void free_entry(struct cache_entry *entry)
     ///////////////////
     // IMPLEMENT ME! //
     ///////////////////
+    // removing the free from the prev and next
     free(entry->content);
     entry->content = NULL;
     free(entry->content_type);
     entry->content_type = NULL;
     free(entry->path);
     entry->path = NULL;
-    free(entry->next);
-    entry->next = NULL;
-    free(entry->prev);
-    entry->prev = NULL;
+
     free(entry);
     entry = NULL;
 }
@@ -182,11 +181,12 @@ void cache_put(struct cache *cache, char *path, char *content_type, void *conten
     if (cache->cur_size > cache->max_size)
     {
         // remove the tail, as that is literally the LRU
-        dllist_remove_tail(cache);
+        // not sure why, but we make an old tail here
+        struct cache_entry *ce_old_tail = dllist_remove_tail(cache);
         // remove the same entry from the hash table
-        hashtable_delete(cache->index, path);
-        // free the cache entry
-        free_entry(cache_entry);
+        hashtable_delete(cache->index, ce_old_tail->path);
+        // free the cache entry, so we NEED TO SAVE A REF TO THE OLD CACHE ENTRY
+        free_entry(ce_old_tail);
     }
 }
 

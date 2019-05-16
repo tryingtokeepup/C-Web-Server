@@ -147,6 +147,9 @@ void get_file(int fd, struct cache *cache, char *request_path)
 
     if (cached_object != NULL)
     {
+        // use send_response to serve it back
+        // you can use the head cuz thats the latestly used object!
+        send_response(fd, "HTTP/1.1 200 OK", cache->head->content_type, cache->head->content, cache->head->content_length);
     }
     snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT, request_path);
     // first s is the directory, second one is the request_path
@@ -160,7 +163,9 @@ void get_file(int fd, struct cache *cache, char *request_path)
     }
 
     mime_type = mime_type_get(filepath);
-
+    // store it in cache
+    cache_put(cache, request_path, mime_type, filedata->data, filedata->size);
+    // send it out!
     send_response(fd, "HTTP/1.1 200 OK", mime_type, filedata->data, filedata->size);
 
     file_free(filedata);
