@@ -140,8 +140,14 @@ void get_file(int fd, struct cache *cache, char *request_path)
     char filepath[4096];
     struct file_data *filedata;
     char *mime_type;
-    (void)cache; // voiding cache for now, like sean did
-    // Fetch
+
+    // Fetch the cache entry
+
+    struct cache_entry *cached_object = cache_get(cache, request_path);
+
+    if (cached_object != NULL)
+    {
+    }
     snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT, request_path);
     // first s is the directory, second one is the request_path
     filedata = file_load(filepath);
