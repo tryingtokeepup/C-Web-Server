@@ -42,7 +42,7 @@ void free_entry(struct cache_entry *entry)
     entry->content_type = NULL;
     free(entry->path);
     entry->path = NULL;
-
+    // don't free things that are not malloc'd
     free(entry);
     entry = NULL;
 }

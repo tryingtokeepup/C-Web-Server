@@ -151,24 +151,36 @@ void get_file(int fd, struct cache *cache, char *request_path)
         // you can use the head cuz thats the latestly used object!
         send_response(fd, "HTTP/1.1 200 OK", cache->head->content_type, cache->head->content, cache->head->content_length);
     }
-    snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT, request_path);
-    // first s is the directory, second one is the request_path
-    filedata = file_load(filepath);
-
-    if (filedata == NULL)
+    else
     {
-        // TODO: make this non-fatal
-        resp_404(fd);
-        return;
+        if (strcmp(request_path, "/") == 0 || strcmp(request_path, " ") == 0) // thanks to james, got one dumb stretch done.
+        {
+            snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT, "/index.html");
+            // first s is the directory, second one is the request_path
+            filedata = file_load(filepath);
+        }
+        else
+        {
+            // default condition, as long as the the above endpoints are not hit, lets do this stuff
+            snprintf(filepath, sizeof filepath, "%s%s", SERVER_ROOT, request_path);
+            // first s is the directory, second one is the request_path
+            filedata = file_load(filepath);
+        }
+        if (filedata == NULL)
+        {
+            // TODO: make this non-fatal
+            resp_404(fd);
+            return;
+        }
+
+        mime_type = mime_type_get(filepath);
+        // store it in cache
+        cache_put(cache, request_path, mime_type, filedata->data, filedata->size);
+        // send it out!
+        send_response(fd, "HTTP/1.1 200 OK", mime_type, filedata->data, filedata->size);
+
+        file_free(filedata);
     }
-
-    mime_type = mime_type_get(filepath);
-    // store it in cache
-    cache_put(cache, request_path, mime_type, filedata->data, filedata->size);
-    // send it out!
-    send_response(fd, "HTTP/1.1 200 OK", mime_type, filedata->data, filedata->size);
-
-    file_free(filedata);
 }
 
 /**
